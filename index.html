@@ -322,10 +322,17 @@ function filterBar({ showSubject=true, showCategory=false } = {}) {
       <option value="all">All categories</option>
       ${CATEGORIES.map(c=>`<option value="${c.slug}" ${filterState.category===c.slug?'selected':''}>${c.label}</option>`).join('')}
     </select>` : ''}
-    <select id="fsem" class="bg-white/70 rounded-lg px-3 py-2 text-sm">
-      <option value="all">All semesters</option>
-      ${[1,2,3,4,5,6,7,8].map(s=>`<option value="${s}" ${filterState.semester==s?'selected':''}>Semester ${s}</option>`).join('')}
-    </select>
+    <select id="upSemester" class="input-field">
+  <option value="">Select semester</option>
+  <option value="1">Semester 1</option>
+  <option value="2">Semester 2</option>
+  <option value="3">Semester 3</option>
+  <option value="4">Semester 4</option>
+  <option value="5">Semester 5</option>
+  <option value="6">Semester 6</option>
+  <option value="7">Semester 7</option>
+  <option value="8">Semester 8</option>
+</select>
   </div>`;
 }
 
