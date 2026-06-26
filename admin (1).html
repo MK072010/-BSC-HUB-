@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel — BSc Study Hub</title>
+<!-- Tailwind config MUST be defined before the CDN script loads -->
+<script>
+  window.tailwind = window.tailwind || {};
+  window.tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
+      }
+    }
+  }
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f0e17;}
+  html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#f0efeb;min-height:100vh;}
+  .admin-bg{
+    background:
+      radial-gradient(60% 50% at 10% 0%,rgba(99,102,241,.25) 0%,transparent 60%),
+      radial-gradient(50% 40% at 100% 10%,rgba(139,92,246,.2) 0%,transparent 60%),
+      radial-gradient(40% 40% at 50% 100%,rgba(59,130,246,.15) 0%,transparent 60%),
+      #0f0e17;
+  }
+  .glass{background:rgba(255,255,255,.06);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 32px 0 rgba(0,0,0,.3);}
+  .glass-card{background:rgba(255,255,255,.08);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:1.25rem;box-shadow:0 12px 40px rgba(0,0,0,.4);}
+  .gradient-text{background:linear-gradient(135deg,#818cf8,#c084fc,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .btn-primary{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;transition:filter .2s;}
+  .btn-primary:hover{filter:brightness(1.1);}
+  .btn-danger{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;}
+  .btn-danger:hover{filter:brightness(1.1);}
+  .input-field{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:.75rem;color:#f0efeb;outline:none;padding:.625rem 1rem;width:100%;font-size:.875rem;transition:border-color .2s;}
+  .input-field:focus{border-color:#818cf8;box-shadow:0 0 0 3px rgba(129,140,248,.2);}
+  .input-field::placeholder{color:rgba(240,239,235,.4);}
+  .input-field option{background:#1e1d2e;color:#f0efeb;}
+  .fade-in{animation:fadeIn .35s ease both;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:999px;font-size:13px;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.4);white-space:nowrap;}
+  .toast-success{background:#059669;color:#fff;}
+  .toast-error{background:#dc2626;color:#fff;}
+  #loginScreen,#dashboardScreen{transition:opacity .3s;}
+  .stat-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:1rem;padding:1.25rem;}
+  .progress-bar{height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-top:.5rem;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#4f46e5,#7c3aed);border-radius:2px;transition:width .6s ease;}
+  table{width:100%;border-collapse:collapse;}
+  th{font-size:.75rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(240,239,235,.5);padding:.75rem 1rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);}
+  td{padding:.875rem 1rem;border-bottom:1px solid rgba(255,255,255,.05);font-size:.875rem;vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,.03);}
+  .badge{display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:999px;font-size:.7rem;font-weight:700;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem;}
+  .upload-zone{border:2px dashed rgba(129,140,248,.4);border-radius:1rem;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;}
+  .upload-zone:hover,.upload-zone.dragover{border-color:#818cf8;background:rgba(129,140,248,.08);}
+  .sidebar-link{display:flex;align-items:center;gap:.75rem;padding:.625rem 1rem;border-radius:.75rem;font-size:.875rem;color:rgba(240,239,235,.7);cursor:pointer;transition:all .2s;}
+  .sidebar-link:hover,.sidebar-link.active{background:rgba(129,140,248,.15);color:#f0efeb;}
+  .sidebar-link svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+</style>
+</head>
+<body class="admin-bg">
+
+<!-- =================== LOGIN SCREEN =================== -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+  <div class="glass-card p-8 w-full max-w-md fade-in">
+    <div class="text-center mb-8">
+      <div class="text-4xl mb-3">🛡️</div>
+      <h1 class="text-2xl font-extrabold">BSc <span class="gradient-text">Study Hub</span></h1>
+      <p class="text-sm text-white/50 mt-1">Admin Panel — Secure Login</p>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Email</label>
+        <input id="loginEmail" type="email" placeholder="admin@example.com" class="input-field"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Password</label>
+        <div class="relative">
+          <input id="loginPassword" type="password" placeholder="••••••••" class="input-field pr-10"/>
+          <button onclick="togglePwd()" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 text-xs">👁</button>
+        </div>
+      </div>
+      <div id="loginError" class="hidden text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2"></div>
+      <button id="loginBtn" onclick="handleLogin()" class="btn-primary w-full py-3 rounded-xl font-bold text-sm mt-2">
+        Sign In to Dashboard
+      </button>
+    </div>
+    <p class="text-center text-xs text-white/30 mt-6">Protected by Supabase Auth · Row Level Security enabled</p>
+  </div>
+</div>
+
+<!-- =================== DASHBOARD SCREEN =================== -->
+<div id="dashboardScreen" class="hidden min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="hidden md:flex flex-col w-64 shrink-0 glass border-r border-white/10 p-4">
+    <div class="mb-8 px-2">
+      <div class="text-lg font-extrabold">BSc <span class="gradient-text">Study Hub</span></div>
+      <div class="text-xs text-white/40 mt-0.5">Admin Dashboard</div>
+    </div>
+    <nav class="space-y-1 flex-1">
+      <div class="sidebar-link active" onclick="showTab('overview')" id="tab-overview">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Overview
+      </div>
+      <div class="sidebar-link" onclick="showTab('upload')" id="tab-upload">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Resource
+      </div>
+      <div class="sidebar-link" onclick="showTab('manage')" id="tab-manage">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Manage Resources
+      </div>
+    </nav>
+    <div class="border-t border-white/10 pt-4 mt-4">
+      <div id="adminEmail" class="text-xs text-white/40 mb-3 px-2 truncate"></div>
+      <button onclick="handleLogout()" class="sidebar-link w-full hover:bg-red-500/15 hover:text-red-400">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- Top bar (mobile) -->
+    <header class="md:hidden glass border-b border-white/10 px-4 h-14 flex items-center justify-between">
+      <div class="font-bold text-sm">BSc <span class="gradient-text">Study Hub</span> Admin</div>
+      <div class="flex gap-2">
+        <button onclick="showTab('upload')" class="text-xs px-3 py-1.5 rounded-full btn-primary">Upload</button>
+        <button onclick="handleLogout()" class="text-xs px-3 py-1.5 rounded-full glass">Logout</button>
+      </div>
+    </header>
+
+    <main class="flex-1 p-4 sm:p-6 overflow-auto">
+
+      <!-- ===== OVERVIEW TAB ===== -->
+      <div id="tabContent-overview" class="fade-in">
+        <div class="mb-6">
+          <h2 class="text-2xl font-extrabold">Dashboard Overview</h2>
+          <p class="text-white/50 text-sm mt-1">Welcome back! Here's what's happening.</p>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6" id="statCards">
+          <!-- Filled by JS -->
+        </div>
+        <div class="glass-card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold">Recent Uploads</h3>
+            <button onclick="showTab('manage')" class="text-xs text-indigo-400 hover:underline">View all →</button>
+          </div>
+          <div id="recentList" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- ===== UPLOAD TAB ===== -->
+      <div id="tabContent-upload" class="hidden fade-in">
+        <div class="mb-6">
+          <h2 class="text-2xl font-extrabold">Upload Resource</h2>
+          <p class="text-white/50 text-sm mt-1">Add a new PDF resource to the study hub.</p>
+        </div>
+        <div class="glass-card p-6 max-w-2xl">
+          <div class="space-y-4">
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Title *</label>
+                <input id="upTitle" type="text" placeholder="e.g. Chemistry 2nd Sem Notes" class="input-field"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Subject *</label>
+                <select id="upSubject" class="input-field">
+                  <option value="">Select subject</option>
+                  <option value="botany">Botany</option>
+                  <option value="zoology">Zoology</option>
+                  <option value="chemistry">Chemistry</option>
+                  <option value="physics">Physics</option>
+                  <option value="mathematics">Mathematics</option>
+                  <option value="biotechnology">Biotechnology</option>
+                  <option value="computer-science">Computer Science</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Description</label>
+              <textarea id="upDesc" rows="2" placeholder="Brief description of this resource..." class="input-field resize-none"></textarea>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Category *</label>
+                <select id="upCategory" class="input-field">
+                  <option value="">Select category</option>
+                  <option value="notes">Notes</option>
+                  <option value="important questions">Important Questions</option>
+                  <option value="previous year papers">Previous Year Papers</option>
+                  <option value="practical-files">Practical Files</option>
+                  <option value="syllabus">Syllabus</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Semester *</label>
+<select id="upSemester" class="input-field">
+  <option value="">Select semester</option>
+  <option value="1">Semester 1</option>
+  <option value="2">Semester 2</option>
+  <option value="3">Semester 3</option>
+  <option value="4">Semester 4</option>
+  <option value="5">Semester 5</option>
+  <option value="6">Semester 6</option>
+  <option value="7">Semester 7</option>
+  <option value="8">Semester 8</option>
+</select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">PDF File *</label>
+              <div id="dropZone" class="upload-zone" onclick="document.getElementById('upFile').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                <div id="dropZoneContent">
+                  <div class="text-3xl mb-2">📄</div>
+                  <div class="text-sm font-semibold text-white/70">Drop PDF here or click to browse</div>
+                  <div class="text-xs text-white/40 mt-1">PDF files only · Max 50MB</div>
+                </div>
+                <input id="upFile" type="file" accept=".pdf" class="hidden" onchange="handleFileSelect(event)"/>
+              </div>
+            </div>
+            <!-- Upload progress -->
+            <div id="uploadProgress" class="hidden">
+              <div class="flex justify-between text-xs text-white/60 mb-1">
+                <span>Uploading...</span><span id="progressPct">0%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+            </div>
+            <div id="uploadError" class="hidden text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2"></div>
+            <button id="uploadBtn" onclick="handleUpload()" class="btn-primary w-full py-3 rounded-xl font-bold text-sm">
+              Upload Resource
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MANAGE TAB ===== -->
+      <div id="tabContent-manage" class="hidden fade-in">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-extrabold">Manage Resources</h2>
+            <p class="text-white/50 text-sm mt-1">Edit or delete uploaded resources.</p>
+          </div>
+          <button onclick="showTab('upload')" class="btn-primary px-4 py-2 rounded-xl text-sm font-semibold">+ Upload New</button>
+        </div>
+        <!-- Filters -->
+        <div class="glass-card p-3 mb-4 flex flex-wrap gap-2">
+          <input id="mSearch" oninput="filterTable()" placeholder="Search resources..." class="input-field flex-1 min-w-40 !py-2"/>
+          <select id="mSubjectFilter" onchange="filterTable()" class="input-field w-40 !py-2">
+            <option value="">All subjects</option>
+            <option value="botany">Botany</option>
+            <option value="zoology">Zoology</option>
+            <option value="chemistry">Chemistry</option>
+            <option value="physics">Physics</option>
+            <option value="mathematics">Mathematics</option>
+            <option value="biotechnology">Biotechnology</option>
+            <option value="computer-science">Computer Science</option>
+          </select>
+          <select id="mCatFilter" onchange="filterTable()" class="input-field w-44 !py-2">
+            <option value="">All categories</option>
+            <option value="notes">Notes</option>
+            <option value="important questions">Important Questions</option>
+            <option value="previous year papers">Previous Year Papers</option>
+            <option value="practical-files">Practical Files</option>
+            <option value="syllabus">Syllabus</option>
+          </select>
+        </div>
+        <div class="glass-card overflow-hidden">
+          <div id="tableWrap" class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Subject</th>
+                  <th>Category</th>
+                  <th>Sem</th>
+                  <th>Downloads</th>
+                  <th>Uploaded</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="resourceTableBody">
+                <tr><td colspan="7" class="text-center text-white/40 py-8">Loading resources...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- =================== EDIT MODAL =================== -->
+<div id="editModal" class="hidden modal-overlay">
+  <div class="glass-card p-6 w-full max-w-lg fade-in">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-extrabold">Edit Resource</h3>
+      <button onclick="closeEditModal()" class="text-white/40 hover:text-white text-xl">✕</button>
+    </div>
+    <input id="editId" type="hidden"/>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Title</label>
+        <input id="editTitle" type="text" class="input-field"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Description</label>
+        <textarea id="editDesc" rows="2" class="input-field resize-none"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Subject</label>
+          <select id="editSubject" class="input-field">
+            <option value="botany">Botany</option>
+            <option value="zoology">Zoology</option>
+            <option value="chemistry">Chemistry</option>
+            <option value="physics">Physics</option>
+            <option value="mathematics">Mathematics</option>
+            <option value="biotechnology">Biotechnology</option>
+            <option value="computer-science">Computer Science</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Category</label>
+          <select id="editCategory" class="input-field">
+            <option value="notes">Notes</option>
+            <option value="important questions">Important Questions</option>
+            <option value="previous year papers">Previous Year Papers</option>
+            <option value="practical-files">Practical Files</option>
+            <option value="syllabus">Syllabus</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">Semester</label>
+        <select id="editSemester" class="input-field">
+          ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">Semester ${n}</option>`).join('')}
+        </select>
+      </div>
+      <div id="editError" class="hidden text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2"></div>
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeEditModal()" class="flex-1 py-2.5 rounded-xl glass text-sm font-semibold">Cancel</button>
+        <button onclick="saveEdit()" class="flex-1 py-2.5 rounded-xl btn-primary text-sm font-semibold">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== DELETE MODAL =================== -->
+<div id="deleteModal" class="hidden modal-overlay">
+  <div class="glass-card p-6 w-full max-w-sm fade-in text-center">
+    <div class="text-4xl mb-4">🗑️</div>
+    <h3 class="text-lg font-extrabold mb-2">Delete Resource?</h3>
+    <p class="text-white/50 text-sm mb-1" id="deleteTitle"></p>
+    <p class="text-white/40 text-xs mb-6">This will permanently delete the PDF from storage and remove the database record. This cannot be undone.</p>
+    <input id="deleteId" type="hidden"/>
+    <input id="deleteFileName" type="hidden"/>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl glass text-sm font-semibold">Cancel</button>
+      <button onclick="confirmDelete()" class="flex-1 py-2.5 rounded-xl btn-danger text-sm font-semibold">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   BSc Study Hub — Admin Panel
+   ========================================================= */
+
+// ============================================================
+// ⚙️  CONFIGURATION — Must match your index.html config
+// ============================================================
+const SUPABASE_URL = 'https://hxnnhgirpyumkfsfhtoh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bm5oZ2lycHl1bWtmc2ZodG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTU4OTksImV4cCI6MjA5ODAzMTg5OX0.TnmOX7oBfUTNA9zT6LIjv9P6ySq129Q3gCtpJTHHHAE';
+// ============================================================
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let allResources = [];
+let currentUser = null;
+
+/* ----- Helpers ----- */
+function toast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type} fade-in`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function setBtn(id, text, disabled) {
+  const btn = document.getElementById(id);
+  if (btn) { btn.textContent = text; btn.disabled = disabled; btn.style.opacity = disabled ? '.6' : '1'; }
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+}
+function hideError(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('hidden');
+}
+
+function ago(iso) {
+  if (!iso) return '';
+  const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
+  if (d < 1) return 'Today'; if (d < 30) return d+'d ago';
+  if (d < 365) return Math.floor(d/30)+'mo ago'; return Math.floor(d/365)+'y ago';
+}
+function fmt(n) { return Number(n||0).toLocaleString(); }
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+/* ----- Password toggle ----- */
+function togglePwd() {
+  const f = document.getElementById('loginPassword');
+  f.type = f.type === 'password' ? 'text' : 'password';
+}
+
+/* ----- Auth ----- */
+async function handleLogin() {
+  hideError('loginError');
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showError('loginError', 'Please enter email and password.'); return; }
+
+  setBtn('loginBtn', 'Signing in...', true);
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  setBtn('loginBtn', 'Sign In to Dashboard', false);
+
+  if (error) { showError('loginError', error.message); return; }
+  currentUser = data.user;
+  showDashboard();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('dashboardScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+async function checkAuth() {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    currentUser = data.session.user;
+    showDashboard();
+  }
+}
+
+function showDashboard() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('dashboardScreen').classList.remove('hidden');
+  document.getElementById('adminEmail').textContent = currentUser?.email || '';
+  loadDashboard();
+}
+
+/* ----- Tab navigation ----- */
+function showTab(name) {
+  ['overview','upload','manage'].forEach(t => {
+    document.getElementById('tabContent-' + t).classList.add('hidden');
+    document.getElementById('tab-' + t)?.classList.remove('active');
+  });
+  document.getElementById('tabContent-' + name).classList.remove('hidden');
+  document.getElementById('tab-' + name)?.classList.add('active');
+  if (name === 'manage') renderTable();
+}
+
+/* ----- Load dashboard data ----- */
+async function loadDashboard() {
+  const { data, error } = await sb.from('resources').select('*').order('created_at', { ascending: false });
+  if (error) { toast('Failed to load resources', 'error'); return; }
+  allResources = data || [];
+  renderStats();
+  renderRecent();
+}
+
+function renderStats() {
+  const totalDownloads = allResources.reduce((a,b) => a + (b.downloads||0), 0);
+  const subjects = new Set(allResources.map(r=>r.subject)).size;
+  const stats = [
+    { label:'Total PDFs', value: allResources.length, icon:'📄', color:'#818cf8' },
+    { label:'Total Downloads', value: fmt(totalDownloads), icon:'⬇️', color:'#34d399' },
+    { label:'Subjects', value: subjects, icon:'📚', color:'#f472b6' },
+    { label:'This Week', value: allResources.filter(r=>(Date.now()-new Date(r.created_at))<604800000).length, icon:'🆕', color:'#facc15' },
+  ];
+  document.getElementById('statCards').innerHTML = stats.map(s=>`
+    <div class="stat-card">
+      <div class="text-2xl mb-1">${s.icon}</div>
+      <div class="text-2xl font-extrabold" style="color:${s.color}">${s.value}</div>
+      <div class="text-xs text-white/50 mt-0.5">${s.label}</div>
+    </div>`).join('');
+}
+
+function renderRecent() {
+  const recent = allResources.slice(0, 5);
+  document.getElementById('recentList').innerHTML = recent.length ? recent.map(r=>`
+    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition">
+      <div class="size-8 rounded-lg bg-indigo-500/20 grid place-items-center text-sm">📄</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-semibold truncate">${r.title}</div>
+        <div class="text-xs text-white/40">${cap(r.subject)} · Sem ${r.semester} · ${fmt(r.downloads)} downloads</div>
+      </div>
+      <div class="text-xs text-white/30">${ago(r.created_at)}</div>
+    </div>`).join('') : '<p class="text-center text-white/30 text-sm py-4">No resources yet.</p>';
+}
+
+/* ----- Table render & filter ----- */
+function renderTable() {
+  const search = (document.getElementById('mSearch')?.value || '').toLowerCase();
+  const subFilter = document.getElementById('mSubjectFilter')?.value || '';
+  const catFilter = document.getElementById('mCatFilter')?.value || '';
+
+  let filtered = allResources.filter(r => {
+    if (subFilter && r.subject !== subFilter) return false;
+    if (catFilter && r.category !== catFilter) return false;
+    if (search && !(r.title+' '+(r.description||'')).toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  const body = document.getElementById('resourceTableBody');
+  if (!filtered.length) {
+    body.innerHTML = '<tr><td colspan="7" class="text-center text-white/40 py-8">No resources found.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = filtered.map(r => `
+    <tr>
+      <td>
+        <div class="font-semibold text-sm leading-tight max-w-xs truncate" title="${r.title}">${r.title}</div>
+        ${r.file_name ? `<div class="text-xs text-white/30 mt-0.5 truncate">${r.file_name}</div>` : ''}
+      </td>
+      <td><span class="badge bg-indigo-500/20 text-indigo-300">${cap(r.subject)}</span></td>
+      <td><span class="badge bg-violet-500/20 text-violet-300 max-w-[120px] truncate">${cap(r.category)}</span></td>
+      <td class="text-white/60">${r.semester}</td>
+      <td class="text-white/60">${fmt(r.downloads)}</td>
+      <td class="text-white/40 text-xs">${ago(r.created_at)}</td>
+      <td>
+        <div class="flex gap-1.5">
+          <button onclick="openEditModal('${r.id}')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 transition">Edit</button>
+          <button onclick="openDeleteModal('${r.id}','${encodeURIComponent(r.title)}','${encodeURIComponent(r.file_name||'')}','${encodeURIComponent(r.pdf_url||'')}')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-500/20 text-red-300 hover:bg-red-500/30 transition">Delete</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterTable() { renderTable(); }
+
+/* ----- File upload ----- */
+let selectedFile = null;
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) setSelectedFile(file);
+}
+function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragover'); }
+function handleDragLeave() { document.getElementById('dropZone').classList.remove('dragover'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') setSelectedFile(file);
+  else toast('Please drop a PDF file.', 'error');
+}
+function setSelectedFile(file) {
+  selectedFile = file;
+  document.getElementById('dropZoneContent').innerHTML = `
+    <div class="text-3xl mb-2">✅</div>
+    <div class="text-sm font-semibold text-green-400">${file.name}</div>
+    <div class="text-xs text-white/40 mt-1">${(file.size/1024/1024).toFixed(2)} MB · Click to change</div>`;
+}
+
+async function handleUpload() {
+  hideError('uploadError');
+  const title = document.getElementById('upTitle').value.trim();
+  const subject = document.getElementById('upSubject').value;
+  const desc = document.getElementById('upDesc').value.trim();
+  const category = document.getElementById('upCategory').value;
+  const semester = document.getElementById('upSemester').value;
+
+  if (!title || !subject || !category || !semester) { showError('uploadError', 'Please fill in all required fields.'); return; }
+  if (!selectedFile) { showError('uploadError', 'Please select a PDF file.'); return; }
+
+  setBtn('uploadBtn', 'Uploading...', true);
+  document.getElementById('uploadProgress').classList.remove('hidden');
+
+  try {
+    // 1. Generate unique filename
+    const ext = selectedFile.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const storagePath = `${subject}/${fileName}`;
+
+    // Update progress UI
+    setProgress(30);
+
+    // 2. Upload to Supabase Storage
+    const { data: storageData, error: storageError } = await sb.storage
+      .from('pdfs')
+      .upload(storagePath, selectedFile, { contentType: 'application/pdf', upsert: false });
+
+    if (storageError) throw storageError;
+    setProgress(70);
+
+    // 3. Get public URL
+    const { data: urlData } = sb.storage.from('pdfs').getPublicUrl(storagePath);
+    const pdfUrl = urlData.publicUrl;
+
+    // 4. Insert into database
+    const { error: dbError } = await sb.from('resources').insert({
+      title,
+      description: desc,
+      subject,
+      category,
+      semester: parseInt(semester),
+      pdf_url: pdfUrl,
+      file_name: selectedFile.name,
+      file_size: selectedFile.size,
+      downloads: 0
+    });
+
+    if (dbError) {
+      // Rollback storage upload
+      await sb.storage.from('pdfs').remove([storagePath]);
+      throw dbError;
+    }
+
+    setProgress(100);
+    toast('Resource uploaded successfully! 🎉');
+
+    // Reset form
+    setTimeout(() => {
+      resetUploadForm();
+      loadDashboard();
+      showTab('manage');
+    }, 800);
+
+  } catch (err) {
+    showError('uploadError', err.message || 'Upload failed. Please try again.');
+    setProgress(0);
+    document.getElementById('uploadProgress').classList.add('hidden');
+  } finally {
+    setBtn('uploadBtn', 'Upload Resource', false);
+  }
+}
+
+function setProgress(pct) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+function resetUploadForm() {
+  ['upTitle','upDesc'].forEach(id => document.getElementById(id).value = '');
+  ['upSubject','upCategory','upSemester'].forEach(id => document.getElementById(id).value = '');
+  selectedFile = null;
+  document.getElementById('upFile').value = '';
+  document.getElementById('dropZoneContent').innerHTML = `
+    <div class="text-3xl mb-2">📄</div>
+    <div class="text-sm font-semibold text-white/70">Drop PDF here or click to browse</div>
+    <div class="text-xs text-white/40 mt-1">PDF files only · Max 50MB</div>`;
+  document.getElementById('uploadProgress').classList.add('hidden');
+  setProgress(0);
+}
+
+/* ----- Edit ----- */
+function openEditModal(id) {
+  const r = allResources.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('editId').value = r.id;
+  document.getElementById('editTitle').value = r.title;
+  document.getElementById('editDesc').value = r.description || '';
+  document.getElementById('editSubject').value = r.subject;
+  document.getElementById('editCategory').value = r.category;
+  document.getElementById('editSemester').value = r.semester;
+  hideError('editError');
+  document.getElementById('editModal').classList.remove('hidden');
+}
+function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
+
+async function saveEdit() {
+  hideError('editError');
+  const id = document.getElementById('editId').value;
+  const title = document.getElementById('editTitle').value.trim();
+  const desc = document.getElementById('editDesc').value.trim();
+  const subject = document.getElementById('editSubject').value;
+  const category = document.getElementById('editCategory').value;
+  const semester = document.getElementById('editSemester').value;
+
+  if (!title) { showError('editError', 'Title is required.'); return; }
+
+  const { error } = await sb.from('resources').update({
+    title, description: desc, subject, category, semester: parseInt(semester)
+  }).eq('id', id);
+
+  if (error) { showError('editError', error.message); return; }
+
+  toast('Resource updated!');
+  closeEditModal();
+  await loadDashboard();
+  renderTable();
+}
+
+/* ----- Delete ----- */
+function openDeleteModal(id, title, fileName, pdfUrl) {
+  document.getElementById('deleteId').value = id;
+  document.getElementById('deleteFileName').value = decodeURIComponent(fileName);
+  document.getElementById('deleteTitle').textContent = decodeURIComponent(title);
+  document.getElementById('deleteModal').classList.remove('hidden');
+}
+function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); }
+
+async function confirmDelete() {
+  const id = document.getElementById('deleteId').value;
+  const fileName = document.getElementById('deleteFileName').value;
+  const res = allResources.find(r => r.id === id);
+
+  // Delete from storage
+  if (res?.pdf_url) {
+    try {
+      // Extract storage path from URL
+      const urlParts = res.pdf_url.split('/storage/v1/object/public/pdfs/');
+      if (urlParts[1]) {
+        await sb.storage.from('pdfs').remove([decodeURIComponent(urlParts[1])]);
+      }
+    } catch (e) { console.warn('Storage delete failed:', e); }
+  }
+
+  // Delete from DB
+  const { error } = await sb.from('resources').delete().eq('id', id);
+  if (error) { toast('Delete failed: ' + error.message, 'error'); return; }
+
+  toast('Resource deleted.');
+  closeDeleteModal();
+  await loadDashboard();
+  renderTable();
+}
+
+/* ----- Init ----- */
+checkAuth();
+</script>
+</body>
+</html>
