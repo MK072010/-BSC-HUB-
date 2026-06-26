@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bsc-study-hub.vercel.app/sitemap.xml
