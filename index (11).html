@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BSc Study Hub — Notes, PYPs, Practical Files & Important Questions</title>
+<meta property="og:title" content="BSc Study Hub - Premium Notes & Resources" />
+<meta property="og:description" content="Download free BSc notes, previous year papers, and practical files." />
+<meta property="og:type" content="website" />
+<meta name="description" content="Premium study hub for BSc students. Download notes, previous year papers, practical files, important questions and syllabus for all subjects." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
+        colors: {
+          brand: { 50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca' },
+        },
+        boxShadow: { glass: '0 8px 32px 0 rgba(31,38,135,0.08)' }
+      }
+    }
+  }
+</script>
+<style>
+  :root { --bg:#f7f8ff; }
+  html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#0f172a;}
+  .mesh-bg{
+    background:
+      radial-gradient(60% 50% at 10% 0%, rgba(99,102,241,.18) 0%, transparent 60%),
+      radial-gradient(50% 40% at 100% 10%, rgba(139,92,246,.18) 0%, transparent 60%),
+      radial-gradient(40% 40% at 50% 100%, rgba(59,130,246,.14) 0%, transparent 60%),
+      #f7f8ff;
+  }
+  .glass{ background: rgba(255,255,255,.62); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); border:1px solid rgba(255,255,255,.7); box-shadow: 0 8px 32px 0 rgba(31,38,135,.08); }
+  .glass-strong{ background: rgba(255,255,255,.85); backdrop-filter: blur(20px) saturate(160%); border:1px solid rgba(255,255,255,.8); box-shadow: 0 12px 40px 0 rgba(31,38,135,.12); }
+  .eyebrow{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#64748b; font-weight:700; }
+  .fade-in{ animation: fadeIn .4s ease both; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  .scrollbar-hide::-webkit-scrollbar{display:none}
+  .scrollbar-hide{scrollbar-width:none}
+  .gradient-text{ background:linear-gradient(135deg,#4f46e5,#8b5cf6,#3b82f6); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .btn-primary{ background:linear-gradient(135deg,#4f46e5,#8b5cf6); color:#fff; }
+  .btn-primary:hover{ filter:brightness(1.05); }
+  .chip{ display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .6rem; border-radius:999px; font-size:11px; font-weight:600; background:#eef2ff; color:#4338ca; }
+  details > summary { list-style:none; cursor:pointer; }
+  details > summary::-webkit-details-marker{display:none}
+  .icon{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#0f172a; color:#fff; padding:10px 16px; border-radius:999px; font-size:13px; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,.2); }
+  #mobileMenu { transition: all 0.3s ease-in-out; }
+  .skeleton{ background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:12px; }
+  @keyframes shimmer{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+</style>
+</head>
+<body class="mesh-bg min-h-screen">
+
+<!-- ============ HEADER ============ -->
+<header class="sticky top-0 z-40 glass border-b border-white/40">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="#/" class="flex items-center gap-2 font-extrabold tracking-tight">
+      <img src="logo.png" alt="Logo" class="size-9 rounded-xl" onerror="this.style.display='none'">
+      <span class="text-lg">BSc <span class="gradient-text">Study Hub</span></span>
+    </a>
+    <nav class="hidden md:flex items-center gap-1 text-sm">
+      <a href="#/" class="px-3 py-2 rounded-full hover:bg-white/60">Home</a>
+      <a href="#/subjects" class="px-3 py-2 rounded-full hover:bg-white/60">Subjects</a>
+      <a href="#/resources/notes" class="px-3 py-2 rounded-full hover:bg-white/60">Notes</a>
+      <a href="#/resources/previous-year-papers" class="px-3 py-2 rounded-full hover:bg-white/60">PYPs</a>
+      <a href="#/bookmarks" class="px-3 py-2 rounded-full hover:bg-white/60">Bookmarks</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      <a href="#/search" class="size-9 grid place-items-center rounded-full hover:bg-white/60" aria-label="Search">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </a>
+      <a href="admin.html" class="hidden md:flex size-9 grid place-items-center rounded-full hover:bg-white/60" aria-label="Admin" title="Admin Panel">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </a>
+      <button id="menuBtn" class="md:hidden size-9 grid place-items-center rounded-full hover:bg-white/60" aria-label="Menu">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="mobileMenu" class="hidden md:hidden border-t border-white/40 px-4 py-3 space-y-1 text-sm bg-white/70">
+    <a href="#/" class="block px-3 py-2 rounded-lg hover:bg-white">Home</a>
+    <a href="#/subjects" class="block px-3 py-2 rounded-lg hover:bg-white">Subjects</a>
+    <a href="#/resources/notes" class="block px-3 py-2 rounded-lg hover:bg-white">Notes</a>
+    <a href="#/resources/previous-year-papers" class="block px-3 py-2 rounded-lg hover:bg-white">Previous Year Papers</a>
+    <a href="#/resources/important-questions" class="block px-3 py-2 rounded-lg hover:bg-white">Important Questions</a>
+    <a href="#/resources/practical-files" class="block px-3 py-2 rounded-lg hover:bg-white">Practical Files</a>
+    <a href="#/resources/syllabus" class="block px-3 py-2 rounded-lg hover:bg-white">Syllabus</a>
+    <a href="#/bookmarks" class="block px-3 py-2 rounded-lg hover:bg-white">Bookmarks</a>
+    <a href="admin.html" class="block px-3 py-2 rounded-lg hover:bg-white text-indigo-600 font-semibold">🛡️ Admin Panel</a>
+  </div>
+</header>
+
+<!-- ============ APP ROOT ============ -->
+<main id="app" class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10"></main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-white/40 mt-12 bg-white/40 backdrop-blur">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-3 gap-6 text-sm">
+    <div>
+      <div class="font-extrabold text-lg">BSc <span class="gradient-text">Study Hub</span></div>
+      <p class="text-slate-500 mt-2">Premium notes, papers and resources for BSc students — built with ❤️ for the academic community.</p>
+    </div>
+    <div>
+      <div class="eyebrow mb-2">Quick Links</div>
+      <ul class="space-y-1 text-slate-600">
+        <li><a href="#/subjects" class="hover:text-indigo-600">All Subjects</a></li>
+        <li><a href="#/resources/notes" class="hover:text-indigo-600">Notes</a></li>
+        <li><a href="#/resources/previous-year-papers" class="hover:text-indigo-600">Previous Year Papers</a></li>
+        <li><a href="#/bookmarks" class="hover:text-indigo-600">Bookmarks</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="eyebrow mb-2">Connect</div>
+      <div class="flex gap-2 flex-wrap">
+        <a target="_blank" rel="noopener" href="https://www.instagram.com/code_with_mohit?igsh=MWdmcGk1bzc4cnNwOQ==" class="chip">📸 Instagram</a>
+        <a target="_blank" rel="noopener" href="https://averondeveloperstudio.netlify.app/" class="chip">🌐 Website</a>
+      </div>
+    </div>
+  </div>
+  <div class="text-center text-xs text-slate-500 pb-6">© 2026 BSc Study Hub. All rights reserved.</div>
+</footer>
+
+<!-- ============ PDF VIEWER MODAL ============ -->
+<div id="pdfModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm p-2 sm:p-6">
+  <div class="glass-strong rounded-2xl w-full max-w-5xl mx-auto h-full flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between p-3 border-b border-white/50">
+      <div id="pdfTitle" class="font-bold truncate"></div>
+      <div class="flex gap-2">
+        <a id="pdfDownload" target="_blank" class="px-3 py-1.5 rounded-full text-sm btn-primary">Download</a>
+        <button onclick="closePdf()" class="px-3 py-1.5 rounded-full text-sm bg-white/70 hover:bg-white">Close</button>
+      </div>
+    </div>
+    <iframe id="pdfFrame" class="flex-1 w-full bg-white"></iframe>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   BSc STUDY HUB — Supabase-powered Single File App
+   ========================================================= */
+
+// ============================================================
+// ⚙️  CONFIGURATION — Replace with your Supabase project values
+// ============================================================
+const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';
+// ============================================================
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ----- Static metadata (UI-only, not stored in DB) ----- */
+const CATEGORIES = [
+  { slug:'notes', label:'Notes', blurb:'Handwritten & typed lecture notes', emoji:'📝' },
+  { slug:'important questions', label:'Important Questions', blurb:'Exam focused question banks', emoji:'❓' },
+  { slug:'previous year papers', label:'Previous Year Papers', blurb:'Last 5+ years of university papers', emoji:'📄' },
+  { slug:'practical-files', label:'Practical Files', blurb:'Lab manuals, observations & viva', emoji:'🧪' },
+  { slug:'syllabus', label:'Syllabus', blurb:'Latest university curriculum', emoji:'📋' },
+];
+const SUBJECTS = [
+  { slug:'botany', name:'Botany', blurb:'Plant physiology, ecology, taxonomy', emoji:'🌿', tint:'bg-emerald-100 text-emerald-700' },
+  { slug:'zoology', name:'Zoology', blurb:'Animal diversity, genetics, evolution', emoji:'🐛', tint:'bg-orange-100 text-orange-700' },
+  { slug:'chemistry', name:'Chemistry', blurb:'Organic, inorganic, physical', emoji:'⚗️', tint:'bg-blue-100 text-blue-700' },
+  { slug:'physics', name:'Physics', blurb:'Mechanics, optics, quantum', emoji:'⚛️', tint:'bg-indigo-100 text-indigo-700' },
+  { slug:'mathematics', name:'Mathematics', blurb:'Calculus, algebra, discrete maths', emoji:'∑', tint:'bg-violet-100 text-violet-700' },
+  { slug:'biotechnology', name:'Biotechnology', blurb:'Microbiology, molecular biology', emoji:'🧬', tint:'bg-pink-100 text-pink-700' },
+  { slug:'computer-science', name:'Computer Science', blurb:'Programming, DSA, databases', emoji:'💻', tint:'bg-slate-200 text-slate-800' },
+];
+
+/* ----- In-memory resource cache ----- */
+let _resourceCache = null;
+let _cacheTime = 0;
+const CACHE_TTL = 60000; // 60 seconds
+
+async function fetchResources(force = false) {
+  const now = Date.now();
+  if (!force && _resourceCache && (now - _cacheTime) < CACHE_TTL) {
+    return _resourceCache;
+  }
+  const { data, error } = await sb
+    .from('resources')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { console.error('Supabase fetch error:', error); return _resourceCache || []; }
+  _resourceCache = data || [];
+  _cacheTime = now;
+  return _resourceCache;
+}
+
+/* ----- Bookmark storage (localStorage) ----- */
+const KEY_BM = 'bsc:bookmarks';
+const read = (k,f) => { try{return JSON.parse(localStorage.getItem(k))??f}catch{return f} };
+const write = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+const getBookmarks = () => read(KEY_BM, []);
+const toggleBookmark = id => {
+  const s = new Set(getBookmarks()); s.has(id) ? s.delete(id) : s.add(id); write(KEY_BM, [...s]);
+};
+const isBM = id => getBookmarks().includes(id);
+
+/* ----- Download tracking (Supabase RPC) ----- */
+async function incrDownload(id) {
+  await sb.rpc('increment_downloads', { resource_id: id });
+}
+
+/* ----- Utils ----- */
+const $ = s => document.querySelector(s);
+const subjectOf = slug => SUBJECTS.find(s => s.slug === slug);
+const categoryOf = slug => CATEGORIES.find(c => c.slug === slug);
+const esc = s => String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmt = n => Number(n||0).toLocaleString();
+const ago = iso => {
+  if (!iso) return '';
+  const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
+  if (d < 1) return 'today'; if (d < 30) return d+'d ago';
+  if (d < 365) return Math.floor(d/30)+'mo ago'; return Math.floor(d/365)+'y ago';
+};
+const fmtSize = bytes => {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes+'B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(0)+'KB';
+  return (bytes/1048576).toFixed(1)+'MB';
+};
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast fade-in'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
+}
+
+/* ----- Skeleton loader ----- */
+function skeletonCards(n=4) {
+  return Array(n).fill(0).map(()=>`
+    <div class="glass rounded-2xl p-4 flex gap-3 items-start">
+      <div class="skeleton size-12 shrink-0 rounded-xl"></div>
+      <div class="flex-1 space-y-2">
+        <div class="skeleton h-4 w-2/3 rounded"></div>
+        <div class="skeleton h-3 w-full rounded"></div>
+        <div class="skeleton h-3 w-1/2 rounded"></div>
+      </div>
+    </div>`).join('');
+}
+
+/* ----- PDF Viewer ----- */
+async function openPdf(id) {
+  const all = await fetchResources();
+  const res = all.find(r => r.id === id);
+  if (!res) return;
+
+  $('#pdfTitle').textContent = res.title;
+  $('#pdfFrame').src = res.pdf_url;
+  $('#pdfDownload').href = res.pdf_url;
+  $('#pdfModal').classList.remove('hidden');
+
+  // Increment in DB (non-blocking)
+  incrDownload(id).then(() => {
+    // Update local cache
+    if (_resourceCache) {
+      const idx = _resourceCache.findIndex(r => r.id === id);
+      if (idx !== -1) _resourceCache[idx].downloads = (_resourceCache[idx].downloads || 0) + 1;
+    }
+  });
+}
+function closePdf() { $('#pdfModal').classList.add('hidden'); $('#pdfFrame').src = ''; }
+
+/* ----- Resource Card ----- */
+function cardHTML(res) {
+  const sub = subjectOf(res.subject) || { name: res.subject, emoji:'📚', tint:'bg-slate-100 text-slate-700' };
+  const cat = categoryOf(res.category) || { label: res.category };
+  const bm = isBM(res.id);
+  const size = fmtSize(res.file_size);
+  return `
+  <article class="glass rounded-2xl p-4 flex gap-3 items-start fade-in hover:shadow-lg transition">
+    <div class="size-12 shrink-0 rounded-xl ${sub.tint} grid place-items-center text-xl">${sub.emoji}</div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-1.5 flex-wrap mb-1">
+        <span class="chip">${esc(sub.name)}</span>
+        <span class="chip bg-violet-100 text-violet-700">${esc(cat.label)}</span>
+        <span class="chip bg-slate-100 text-slate-600">Sem ${res.semester}</span>
+      </div>
+      <h3 class="font-bold leading-tight">${esc(res.title)}</h3>
+      <p class="text-sm text-slate-500 line-clamp-2">${esc(res.description || '')}</p>
+      <div class="flex items-center gap-3 mt-2 text-xs text-slate-500">
+        ${size ? `<span>${size}</span><span>·</span>` : ''}
+        <span>${fmt(res.downloads)} ↓</span><span>·</span>
+        <span>${ago(res.created_at)}</span>
+      </div>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <button onclick="openPdf('${res.id}')" class="px-3 py-1.5 rounded-full text-xs btn-primary">View</button>
+      <button onclick="handleBookmark('${res.id}')" class="px-3 py-1.5 rounded-full text-xs bg-white/70 hover:bg-white" title="Bookmark">${bm?'★ Saved':'☆ Save'}</button>
+    </div>
+  </article>`;
+}
+
+function handleBookmark(id) {
+  toggleBookmark(id);
+  render(); // re-render to update bookmark state
+}
+
+/* ----- Filter UI ----- */
+let filterState = { q: '', subject: 'all', category: 'all', semester: 'all' };
+
+function filterBar({ showSubject=true, showCategory=false } = {}) {
+  return `
+  <div class="glass rounded-2xl p-3 grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto] gap-2">
+    <div class="relative">
+      <svg class="icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="fq" value="${esc(filterState.q)}" placeholder="Search by title or description" class="w-full pl-10 pr-3 py-2 rounded-lg bg-white/70 border border-transparent focus:border-indigo-300 outline-none text-sm"/>
+    </div>
+    ${showSubject ? `<select id="fsubject" class="bg-white/70 rounded-lg px-3 py-2 text-sm">
+      <option value="all">All subjects</option>
+      ${SUBJECTS.map(s=>`<option value="${s.slug}" ${filterState.subject===s.slug?'selected':''}>${s.name}</option>`).join('')}
+    </select>` : ''}
+    ${showCategory ? `<select id="fcategory" class="bg-white/70 rounded-lg px-3 py-2 text-sm">
+      <option value="all">All categories</option>
+      ${CATEGORIES.map(c=>`<option value="${c.slug}" ${filterState.category===c.slug?'selected':''}>${c.label}</option>`).join('')}
+    </select>` : ''}
+    <select id="fsem" class="bg-white/70 rounded-lg px-3 py-2 text-sm">
+      <option value="all">All semesters</option>
+      ${[1,2,3,4,5,6,7,8].map(s=>`<option value="${s}" ${filterState.semester==s?'selected':''}>Semester ${s}</option>`).join('')}
+    </select>
+  </div>`;
+}
+
+function wireFilters(rerender) {
+  let debounceTimer;
+  $('#fq')?.addEventListener('input', e => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => { filterState.q = e.target.value; rerender(); }, 300);
+  });
+  $('#fsubject')?.addEventListener('change', e => { filterState.subject = e.target.value; rerender(); });
+  $('#fcategory')?.addEventListener('change', e => { filterState.category = e.target.value; rerender(); });
+  $('#fsem')?.addEventListener('change', e => { filterState.semester = e.target.value; rerender(); });
+}
+
+function applyFilters(list) {
+  const n = filterState.q.trim().toLowerCase();
+  return list.filter(r => {
+    if (filterState.subject !== 'all' && r.subject !== filterState.subject) return false;
+    if (filterState.category !== 'all' && r.category !== filterState.category) return false;
+    if (filterState.semester !== 'all' && String(r.semester) !== filterState.semester) return false;
+    if (n && !(r.title + ' ' + (r.description||'')).toLowerCase().includes(n)) return false;
+    return true;
+  });
+}
+
+/* ----- Empty state ----- */
+function emptyState(msg = 'No resources match your filters.') {
+  return `<div class="glass rounded-2xl p-10 text-center text-sm text-slate-500">${msg}</div>`;
+}
+
+/* =================== PAGES =================== */
+
+async function pageHome() {
+  // Show skeleton while loading
+  $('#app').innerHTML = `
+  <div class="animate-pulse space-y-4">
+    <div class="skeleton h-16 w-2/3 rounded-2xl"></div>
+    <div class="skeleton h-6 w-1/2 rounded-xl"></div>
+    <div class="grid grid-cols-4 gap-3">${Array(4).fill('<div class="skeleton h-20 rounded-2xl"></div>').join('')}</div>
+  </div>`;
+
+  const all = await fetchResources();
+  const stats = {
+    totalPdfs: all.length,
+    subjects: SUBJECTS.length,
+    downloads: all.reduce((a,b) => a + (b.downloads||0), 0),
+    students: 5200
+  };
+  const latest = [...all].slice(0, 6);
+  const trending = [...all].sort((a,b) => (b.downloads||0) - (a.downloads||0)).slice(0, 4);
+
+  return `
+  <section class="grid lg:grid-cols-[1fr_320px] gap-8 items-start">
+    <div class="space-y-6">
+      <div class="eyebrow">Vol. 01 · Academic Year 2026</div>
+      <h1 class="text-4xl sm:text-6xl font-black tracking-tighter leading-[0.95]">
+        Your premium <span class="gradient-text">study hub</span> for every BSc subject.
+      </h1>
+      <p class="text-slate-600 max-w-2xl">Curated notes, previous year papers, practical files, important questions and syllabus — beautifully organized for serious students.</p>
+      <div class="flex gap-2 flex-wrap">
+        <a href="#/subjects" class="px-5 py-2.5 rounded-full btn-primary text-sm font-semibold">Browse subjects →</a>
+        <a href="#/resources/previous-year-papers" class="px-5 py-2.5 rounded-full glass text-sm font-semibold hover:bg-white">Previous year papers</a>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        ${[['Total PDFs',stats.totalPdfs],['Subjects',stats.subjects],['Downloads',fmt(stats.downloads)],['Students',fmt(stats.students)+'+']].map(([l,v])=>`
+          <div class="glass rounded-2xl p-4"><div class="text-2xl font-extrabold">${v}</div><div class="eyebrow mt-1">${l}</div></div>
+        `).join('')}
+      </div>
+    </div>
+    <aside class="glass rounded-3xl p-5 space-y-3">
+      <div class="eyebrow">Trending now</div>
+      ${trending.length ? trending.map(r=>`
+        <button onclick="openPdf('${r.id}')" class="w-full text-left p-3 rounded-xl hover:bg-white/70 transition">
+          <div class="text-sm font-bold leading-tight">${esc(r.title)}</div>
+          <div class="text-xs text-slate-500 mt-1">${esc(subjectOf(r.subject)?.name||r.subject)} · ${fmt(r.downloads)} ↓</div>
+        </button>
+      `).join('') : '<p class="text-xs text-slate-400">No resources yet.</p>'}
+    </aside>
+  </section>
+
+  <section class="mt-12">
+    <div class="flex items-end justify-between mb-4">
+      <div><div class="eyebrow">Categories</div><h2 class="text-2xl font-extrabold tracking-tight">Find what you need</h2></div>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      ${CATEGORIES.map(c=>`
+        <a href="#/resources/${c.slug}" class="glass rounded-2xl p-4 hover:shadow-lg transition group">
+          <div class="text-2xl">${c.emoji}</div>
+          <div class="mt-2 font-bold">${c.label}</div>
+          <div class="text-xs text-slate-500">${c.blurb}</div>
+        </a>
+      `).join('')}
+    </div>
+  </section>
+
+  <section class="mt-12">
+    <div class="flex items-end justify-between mb-4">
+      <div><div class="eyebrow">Subjects</div><h2 class="text-2xl font-extrabold tracking-tight">All BSc subjects</h2></div>
+      <a href="#/subjects" class="text-sm font-semibold text-indigo-600 hover:underline">View all →</a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      ${SUBJECTS.map(s=>`
+        <a href="#/subjects/${s.slug}" class="glass rounded-2xl p-4 hover:shadow-lg transition">
+          <div class="size-10 rounded-xl ${s.tint} grid place-items-center text-xl">${s.emoji}</div>
+          <div class="mt-2 font-bold">${s.name}</div>
+          <div class="text-xs text-slate-500">${s.blurb}</div>
+        </a>
+      `).join('')}
+    </div>
+  </section>
+
+  <section class="mt-12">
+    <div class="flex items-end justify-between mb-4">
+      <div><div class="eyebrow">Fresh uploads</div><h2 class="text-2xl font-extrabold tracking-tight">Latest resources</h2></div>
+    </div>
+    <div class="space-y-2">${latest.length ? latest.map(cardHTML).join('') : emptyState('No resources uploaded yet.')}</div>
+  </section>
+
+  <section class="mt-12 glass rounded-3xl p-6 sm:p-10 text-center">
+    <div class="eyebrow">Join the community</div>
+    <h2 class="text-3xl font-extrabold tracking-tight mt-1">Stay connected for daily updates</h2>
+    <div class="flex flex-wrap justify-center gap-2 mt-4">
+      <a target="_blank" rel="noopener" href="https://www.instagram.com/code_with_mohit?igsh=MWdmcGk1bzc4cnNwOQ==" class="px-4 py-2 rounded-full btn-primary text-sm">📸 Follow Instagram</a>
+      <a target="_blank" rel="noopener" href="https://averondeveloperstudio.netlify.app/" class="px-4 py-2 rounded-full glass text-sm hover:bg-white">🌐 Visit Website</a>
+    </div>
+  </section>`;
+}
+
+async function pageSubjects() {
+  const all = await fetchResources();
+  return `
+  <div class="eyebrow">Library</div>
+  <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tighter">All Subjects</h1>
+  <p class="text-slate-600 mt-2">Pick a subject to explore notes, papers, practical files and more.</p>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-6">
+    ${SUBJECTS.map(s=>{
+      const count = all.filter(r=>r.subject===s.slug).length;
+      return `<a href="#/subjects/${s.slug}" class="glass rounded-2xl p-5 hover:shadow-lg transition">
+        <div class="flex items-center gap-3">
+          <div class="size-12 rounded-xl ${s.tint} grid place-items-center text-2xl">${s.emoji}</div>
+          <div><div class="font-bold">${s.name}</div><div class="text-xs text-slate-500">${count} resources</div></div>
+        </div>
+        <p class="text-sm text-slate-500 mt-3">${s.blurb}</p>
+      </a>`;
+    }).join('')}
+  </div>`;
+}
+
+async function pageSubjectDetail(slug) {
+  const sub = subjectOf(slug);
+  if (!sub) return `<div class="glass rounded-2xl p-10 text-center">Subject not found. <a href="#/subjects" class="text-indigo-600">Back</a></div>`;
+  const all = await fetchResources();
+  const subResources = all.filter(r => r.subject === slug);
+  const filtered = applyFilters(subResources);
+  return `
+  <div class="flex items-center gap-3">
+    <div class="size-14 rounded-2xl ${sub.tint} grid place-items-center text-3xl">${sub.emoji}</div>
+    <div>
+      <div class="eyebrow">Subject</div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">${sub.name}</h1>
+    </div>
+  </div>
+  <p class="text-slate-600 mt-2 max-w-2xl">${sub.blurb}</p>
+  <div class="mt-6">${filterBar({showSubject:false,showCategory:true})}</div>
+  <div id="resList" class="mt-4 space-y-2">${filtered.length ? filtered.map(cardHTML).join('') : emptyState()}</div>`;
+}
+
+async function pageCategory(slug) {
+  const cat = categoryOf(slug);
+  if (!cat) return `<div class="glass rounded-2xl p-10 text-center">Category not found. <a href="#/" class="text-indigo-600">Back</a></div>`;
+  filterState.category = slug;
+  const all = await fetchResources();
+  const catResources = all.filter(r => r.category === slug);
+  const filtered = applyFilters(catResources);
+  return `
+  <div class="eyebrow">Category</div>
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">${cat.emoji} ${cat.label}</h1>
+  <p class="text-slate-600 mt-2 max-w-2xl">${cat.blurb}</p>
+  <div class="mt-6">${filterBar({showSubject:true,showCategory:false})}</div>
+  <div id="resList" class="mt-4 space-y-2">${filtered.length ? filtered.map(cardHTML).join('') : emptyState()}</div>`;
+}
+
+async function pageSearch() {
+  const all = await fetchResources();
+  const filtered = applyFilters(all);
+  return `
+  <div class="eyebrow">Search</div>
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Find any resource</h1>
+  <div class="mt-6">${filterBar({showSubject:true,showCategory:true})}</div>
+  <div id="resList" class="mt-4 space-y-2">${filtered.length ? filtered.map(cardHTML).join('') : emptyState()}</div>`;
+}
+
+async function pageBookmarks() {
+  const all = await fetchResources();
+  const ids = new Set(getBookmarks());
+  const list = all.filter(r => ids.has(r.id));
+  return `
+  <div class="eyebrow">Saved</div>
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Your Bookmarks</h1>
+  <p class="text-slate-600 mt-2">All your saved PDFs in one place. Stored locally on this device.</p>
+  <div class="mt-6 space-y-2">${list.length ? list.map(cardHTML).join('') : `<div class="glass rounded-2xl p-10 text-center text-sm text-slate-500">No bookmarks yet. Save PDFs from any page.</div>`}</div>`;
+}
+
+/* =================== ROUTER =================== */
+function parseHash() {
+  const h = (location.hash || '#/').replace(/^#/, '') || '/';
+  return h.split('/').filter(Boolean);
+}
+
+async function render() {
+  const parts = parseHash();
+  const app = $('#app');
+
+  // Show loading skeleton immediately
+  app.innerHTML = `<div class="space-y-3">${skeletonCards(3)}</div>`;
+
+  let html = '';
+  try {
+    if (parts.length === 0)                           html = await pageHome();
+    else if (parts[0]==='subjects' && !parts[1])     html = await pageSubjects();
+    else if (parts[0]==='subjects' && parts[1])      html = await pageSubjectDetail(parts[1]);
+    else if (parts[0]==='resources' && parts[1])     html = await pageCategory(parts[1]);
+    else if (parts[0]==='search')                    html = await pageSearch();
+    else if (parts[0]==='bookmarks')                 html = await pageBookmarks();
+    else html = `<div class="glass rounded-2xl p-10 text-center"><h2 class="text-2xl font-bold">404</h2><p class="text-slate-500 mt-2">Page not found.</p><a href="#/" class="text-indigo-600 mt-3 inline-block">Go home</a></div>`;
+  } catch(err) {
+    html = `<div class="glass rounded-2xl p-10 text-center text-red-600">Failed to load resources. Check your Supabase configuration.</div>`;
+    console.error(err);
+  }
+
+  app.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  // Wire filters for list pages
+  wireFilters(async () => {
+    const parts2 = parseHash();
+    const all = await fetchResources();
+    let list;
+    if (parts2[0]==='subjects' && parts2[1]) list = applyFilters(all.filter(r=>r.subject===parts2[1]));
+    else if (parts2[0]==='resources' && parts2[1]) list = applyFilters(all.filter(r=>r.category===parts2[1]));
+    else if (parts2[0]==='search') list = applyFilters(all);
+    else return;
+    const el = $('#resList');
+    if (el) el.innerHTML = list.length ? list.map(cardHTML).join('') : emptyState();
+  });
+
+  $('#mobileMenu')?.classList.add('hidden');
+}
+
+window.addEventListener('hashchange', () => {
+  filterState = { q: '', subject: 'all', category: 'all', semester: 'all' };
+  render();
+});
+
+document.getElementById('menuBtn')?.addEventListener('click', () => {
+  $('#mobileMenu').classList.toggle('hidden');
+});
+
+// Expose globals for inline handlers
+window.openPdf = openPdf;
+window.closePdf = closePdf;
+window.toggleBookmark = toggleBookmark;
+window.handleBookmark = handleBookmark;
+window.render = render;
+
+render();
+</script>
+</body>
+</html>
